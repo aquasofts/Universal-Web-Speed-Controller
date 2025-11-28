@@ -1,9 +1,9 @@
 // ==UserScript==
 // @name         通用网页视频倍速控制器
 // @namespace    http://tampermonkey.net/
-// @version      1.1
-// @description  在页面左上角添加一个浮窗，通过填写的数值来控制网页上所有视频/音频的播放速度
-// @author       Aquasoft/Gemini
+// @version      1.3
+// @description  在页面左上角添加一个浮窗，通过填写的数值来控制网页上所有视频/音频的播放速度，并拦截 JS 时间引擎以加速 Unity/Canvas 游戏。新增F7暂停/恢复、F5重置、F6加速功能，UI已添加按键提示。
+// @author       Gemini
 // @match        *://*/*
 // @grant        none
 // @run-at       document-start
@@ -14,6 +14,7 @@
 
     // --- 全局配置 ---
     let currentSpeed = 1.0;
+    let isPaused = false; // 新增：暂停状态
 
     // --- 时间劫持引擎 (针对 Unity/Canvas/JS 游戏) ---
     // 保存原生方法引用
@@ -27,6 +28,11 @@
 
     // 核心更新逻辑：计算虚拟时间
     function updateVirtualTime() {
+        // 暂停状态下不更新虚拟时间
+        if (isPaused) {
+            return;
+        }
+
         const realNow = nativePerformanceNow();
         const dt = realNow - lastRealTime;
         // 如果速度不为1，则应用倍率；否则保持同步防止漂移
@@ -67,6 +73,45 @@
         });
     };
 
+    // --- 新增功能：时间控制 ---
+    function togglePause() {
+        isPaused = !isPaused;
+        if (isPaused) {
+            // 暂停时，保持虚拟时间不变
+            lastRealTime = nativePerformanceNow();
+            statusMsg.innerText = `已暂停 (JS+媒体)`;
+            statusMsg.style.color = '#FF9800';
+        } else {
+            // 恢复时，重置基准时间
+            lastRealTime = nativePerformanceNow();
+            virtualTime = nativePerformanceNow();
+            statusMsg.innerText = `当前: ${currentSpeed}x (JS+媒体)`;
+            statusMsg.style.color = '#81C784';
+        }
+    }
+
+    function resetTime() {
+        isPaused = false;
+        lastRealTime = nativePerformanceNow();
+        virtualTime = nativePerformanceNow();
+        currentSpeed = 1.0;
+        speedInput.value = 1.0;
+        applyMediaSpeed(1.0);
+        statusMsg.innerText = '已重置 (1.0x)';
+        statusMsg.style.color = '#aaa';
+    }
+
+    function increaseTime() {
+        if (isPaused) {
+            return;
+        }
+        currentSpeed *= 5;
+        if (currentSpeed > 100) currentSpeed = 100; // 防止过大
+        speedInput.value = currentSpeed;
+        applyMediaSpeed(currentSpeed);
+        statusMsg.innerText = `当前: ${currentSpeed}x (JS+媒体)`;
+        statusMsg.style.color = '#81C784';
+    }
 
     // --- UI 界面构建 (等待 DOM 就绪) ---
     function initUI() {
@@ -140,12 +185,20 @@
         statusMsg.style.marginTop = '5px';
         statusMsg.innerText = '当前: 1.0x';
 
+        // 新增按键提示
+        const keyHint = document.createElement('div');
+        keyHint.style.fontSize = '10px';
+        keyHint.style.color = '#aaa';
+        keyHint.style.marginTop = '2px';
+        keyHint.innerText = 'F7: 暂停/恢复 | F5: 重置 | F6: 5倍加速';
+
         inputContainer.appendChild(speedInput);
         inputContainer.appendChild(setBtn);
         panel.appendChild(title);
         panel.appendChild(inputContainer);
         panel.appendChild(resetBtn);
         panel.appendChild(statusMsg);
+        panel.appendChild(keyHint); // 添加按键提示
         document.body.appendChild(panel);
 
         // --- 逻辑绑定 ---
@@ -192,6 +245,20 @@
             statusMsg.innerText = '当前: 1.0x';
             statusMsg.style.color = '#aaa';
         };
+
+        // --- 新增功能：键盘控制 ---
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'F7') {
+                event.preventDefault();
+                togglePause();
+            } else if (event.key === 'F5') {
+                event.preventDefault();
+                resetTime();
+            } else if (event.key === 'F6') {
+                event.preventDefault();
+                increaseTime();
+            }
+        });
 
         // 自动维护循环 (媒体标签)
         setInterval(() => {

@@ -1,4 +1,4 @@
-export const siteData = JSON.parse("{\"base\":\"/\",\"lang\":\"zh-CN\",\"title\":\"通用网页倍速控制器\",\"description\":\"让网页视频和Unity游戏快人一步\",\"head\":[],\"locales\":{}}")
+export const siteData = JSON.parse("{\"base\":\"/Universal-Web-Speed-Controller/\",\"lang\":\"zh-CN\",\"title\":\"通用网页倍速控制器\",\"description\":\"重新定义您的网页浏览与游戏节奏\",\"head\":[],\"locales\":{}}")
 
 if (import.meta.webpackHot) {
   import.meta.webpackHot.accept()

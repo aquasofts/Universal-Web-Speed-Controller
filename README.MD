@@ -12,6 +12,8 @@
 
 ## 🛠️ 安装方法
 
+**安装教程:**[Edge 浏览器安装指南 | 通用网页倍速控制器](https://aquasofts.github.io/Universal-Web-Speed-Controller/guide/edge.html)
+
 1. **安装扩展**： 确保你的浏览器（Chrome, Edge, Firefox 等）已安装 **Tampermonkey** 或 **Violentmonkey** 扩展。
 2. **添加脚本**：
    - 点击浏览器扩展栏的油猴图标 -> **添加新脚本**。

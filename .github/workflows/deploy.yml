@@ -51,6 +51,13 @@ jobs:
         # 使用 npm install 代替 npm ci，兼容性更好（防止 lock 文件版本不一致报错）
         run: npm install
 
+      # -----------------------------------------------------------------------
+      # 新增修复：强制赋予二进制文件执行权限
+      # 解决 'vuepress: Permission denied' 错误
+      # -----------------------------------------------------------------------
+      - name: Fix Permissions
+        run: chmod -R +x node_modules/.bin
+
       - name: Build
         run: npm run docs:build
 

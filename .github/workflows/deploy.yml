@@ -24,6 +24,15 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
+    
+    # -----------------------------------------------------------------------
+    # 核心修复：设置默认工作目录
+    # 因为您的项目在子文件夹中，必须告诉 Action 在哪里运行命令
+    # -----------------------------------------------------------------------
+    defaults:
+      run:
+        working-directory: vuepress/vuepress-starter
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -35,9 +44,12 @@ jobs:
         with:
           node-version: 18
           cache: npm
+          # 修复 Setup Node 报错：明确指定 lock 文件位置
+          cache-dependency-path: vuepress/vuepress-starter/package-lock.json
 
       - name: Install Dependencies
-        run: npm ci
+        # 使用 npm install 代替 npm ci，兼容性更好（防止 lock 文件版本不一致报错）
+        run: npm install
 
       - name: Build
         run: npm run docs:build
@@ -48,8 +60,8 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # VuePress 默认的打包输出路径
-          path: docs/.vuepress/dist
+          # 修复打包路径：指向子目录下的 dist
+          path: vuepress/vuepress-starter/docs/.vuepress/dist
 
       - name: Deploy to GitHub Pages
         id: deployment

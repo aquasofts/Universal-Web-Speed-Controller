@@ -63,6 +63,13 @@ jobs:
       - name: Build
         run: npm run docs:build
 
+      # -----------------------------------------------------------------------
+      # 样式崩坏修复：创建 .nojekyll 文件
+      # 告诉 GitHub Pages 不要忽略 _assets 文件夹 (VuePress 的默认静态资源目录)
+      # -----------------------------------------------------------------------
+      - name: Create .nojekyll
+        run: touch docs/.vuepress/dist/.nojekyll
+
       - name: Setup Pages
         uses: actions/configure-pages@v4
 

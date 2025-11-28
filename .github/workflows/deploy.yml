@@ -42,7 +42,9 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          # 修复 SyntaxError: Invalid regular expression flags
+          # 升级到 Node 20 以支持正则 'v' 标志
+          node-version: 20
           cache: npm
           # 修复 Setup Node 报错：明确指定 lock 文件位置
           cache-dependency-path: vuepress/vuepress-starter/package-lock.json
